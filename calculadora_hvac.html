@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora HVAC (Modo Oscuro)</title>
+    <style>
+        /* Dark Mode Styles */
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #1a1a1a; /* Dark background */
+            color: #e0e0e0; /* Light text */
+        }
+
+        h1, h2 {
+            color: #f5f5f5; /* Lighter headings */
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+           border-bottom: 1px solid #444; /* Darker border */
+           padding-bottom: 5px;
+           margin-top: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: #2c2c2c; /* Dark container background */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5); /* Slightly more pronounced shadow */
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .main-calculation-section {
+            flex: 1 1 400px;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .auxiliary-sections {
+            flex: 1 1 350px;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .calculator-section {
+            background-color: #3b3b3b; /* Darker section background */
+            padding: 15px;
+            border: 1px solid #555; /* Darker border */
+            border-radius: 5px;
+        }
+
+        .input-values .velocity-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cccccc; /* Lighter label text */
+            font-size: 0.9em;
+        }
+
+        input[type="number"] {
+            width: 95%;
+            padding: 8px;
+            margin-top: 3px;
+            border: 1px solid #666; /* Darker input border */
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1em;
+            background-color: #555; /* Dark input background */
+            color: #f0f0f0; /* Light input text */
+        }
+        /* Adjust placeholder color for dark inputs */
+        input[type="number"]::placeholder {
+            color: #aaa;
+        }
+
+        /* Hide spinner buttons on number inputs */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input[type=number] {
+          -moz-appearance: textfield; /* Firefox */
+        }
+
+
+        /* Style for output spans */
+        .calculator-section p {
+            margin-top: 10px;
+            color: #e0e0e0; /* Light paragraph text */
+            font-size: 0.95em;
+        }
+        .calculator-section p span {
+            font-weight: bold;
+            color: #87ceeb; /* Light blue for results */
+            background-color: #4f4f4f; /* Slightly lighter dark background for contrast */
+            padding: 3px 6px;
+            border-radius: 3px;
+            display: inline-block;
+            min-width: 60px;
+            text-align: right;
+            border: 1px solid #666; /* Darker border for output */
+            margin-left: 5px;
+        }
+
+        /* Specific layouts for sections needing side-by-side label/input */
+        .area-calc label,
+        .converter label,
+        .results > label {
+             display: flex;
+           justify-content: space-between;
+           align-items: center;
+           gap: 10px;
+           margin-bottom: 10px;
+        }
+
+        .area-calc input[type="number"],
+        .converter input[type="number"],
+        .results > label > input[type="number"] {
+             width: auto;
+             flex-grow: 1;
+             max-width: 150px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                padding: 15px;
+            }
+            .input-values .velocity-inputs {
+               grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            .area-calc label,
+            .converter label,
+            .results > label {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            .area-calc input[type="number"],
+            .converter input[type="number"],
+            .results > label > input[type="number"] {
+                width: 100%;
+                max-width: none;
+            }
+        }
+         @media (max-width: 480px) {
+              body {
+                  margin: 10px;
+              }
+              .container {
+                  padding: 10px;
+              }
+              h1 {
+                  font-size: 1.5em;
+              }
+              h2 {
+                  font-size: 1.2em;
+              }
+              .input-values .velocity-inputs {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+              }
+              label {
+                  font-size: 0.85em;
+              }
+              input[type="number"] {
+                  padding: 6px;
+                  font-size: 0.9em;
+              }
+              .calculator-section p span {
+                  min-width: 50px;
+                  padding: 2px 4px;
+              }
+          }
+    </style>
+</head>
+<body>
+    <h1>Calculadora de Ventilación HVAC</h1>
+
+    <div class="container">
+        <div class="main-calculation-section">
+            <div class="calculator-section input-values">
+                <h2>1. Toma de valores (pie/min)</h2>
+                <div class="velocity-inputs">
+                    <label>Valor 1: <input type="number" step="any" class="velocity-input" placeholder="0.00"></label>
+                    <label>Valor 2: <input type="number" step="any" class="velocity-input" placeholder="0.00"></label>
+                    <label>Valor 3: <input type="number" step="any" class="velocity-input" placeholder="0.00"></label>
+                    <label>Valor 4: <input type="number" step="any" class="velocity-input" placeholder="0.00"></label>
+                    <label>Valor 5: <input type="number" step="any" class="velocity-input" placeholder="0.00"></label>
+                    <label>Valor 6: <input type="number" step="any" class="velocity-input" placeholder="0.00"></label>
+                    <label>Valor 7: <input type="number" step="any" class="velocity-input" placeholder="0.00"></label>
+                    <label>Valor 8: <input type="number" step="any" class="velocity-input" placeholder="0.00"></label>
+                    <label>Valor 9: <input type="number" step="any" class="velocity-input" placeholder="0.00"></label>
+                    <label>Valor 10: <input type="number" step="any" class="velocity-input" placeholder="0.00"></label>
+                </div>
+            </div>
+
+            <div class="calculator-section results">
+                <h2>2. Promedio Velocidad</h2>
+                <p>Promedio (pie/min): <span id="average-output">0.00</span></p>
+
+                <h2>3. Área de Rejilla/Ducto</h2>
+                <label>Area (pie²): <input type="number" step="any" id="area-input-ft2" min="0" placeholder="0.00"></label>
+
+                <h2>4. Volumen (Caudal)</h2>
+                <p>Volumen (cfm): <span id="volume-output-cfm">0.00</span></p>
+            </div>
+        </div>
+
+        <div class="auxiliary-sections">
+            <div class="calculator-section converter">
+                <h2>5. Convertidor de cfm a m³/h</h2>
+                <label>CFM a convertir: <input type="number" step="any" id="cfm-input-converter" min="0" placeholder="0.00"></label>
+                <p>Resultado (m³/h): <span id="m3h-output">0.00</span></p>
+            </div>
+
+            <div class="calculator-section area-calc">
+                <h2>6. Area de cuadrado</h2>
+                <label>Altura (cm): <input type="number" step="any" id="square-height-cm" min="0" placeholder="0.00"></label>
+                <label>Largo (cm): <input type="number" step="any" id="square-length-cm" min="0" placeholder="0.00"></label>
+                <p>Area (cm²): <span id="square-area-output-cm2">0.00</span></p>
+            </div>
+
+            <div class="calculator-section area-calc">
+                <h2>7. Area de circulo</h2>
+                <label>Diametro (cm): <input type="number" step="any" id="circle-diameter-cm" min="0" placeholder="0.00"></label>
+                <p>Area (cm²): <span id="circle-area-output-cm2">0.00</span></p>
+            </div>
+
+            <div class="calculator-section converter">
+                <h2>8. Convertidor de area (cm² a pie²)</h2>
+                <label>cm² a convertir: <input type="number" step="any" id="cm2-input-converter" min="0" placeholder="0.00"></label>
+                <p>Resultado (pie²): <span id="ft2-output-converter">0.00</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript remains exactly the same as before
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Get DOM Elements ---
+            const velocityInputs = document.querySelectorAll('.velocity-input');
+            const averageOutput = document.getElementById('average-output');
+            const areaInputFt2 = document.getElementById('area-input-ft2');
+            const volumeOutputCfm = document.getElementById('volume-output-cfm');
+
+            const cfmInputConverter = document.getElementById('cfm-input-converter');
+            const m3hOutput = document.getElementById('m3h-output');
+
+            const squareHeightCm = document.getElementById('square-height-cm');
+            const squareLengthCm = document.getElementById('square-length-cm');
+            const squareAreaOutputCm2 = document.getElementById('square-area-output-cm2');
+
+            const circleDiameterCm = document.getElementById('circle-diameter-cm');
+            const circleAreaOutputCm2 = document.getElementById('circle-area-output-cm2');
+
+            const cm2InputConverter = document.getElementById('cm2-input-converter');
+            const ft2OutputConverter = document.getElementById('ft2-output-converter');
+
+            // --- Constants ---
+            const CFM_TO_M3H_FACTOR = 1.69901;
+            const CM2_TO_FT2_FACTOR = 1 / 929.0304; // Approximately 0.00107639
+            const PI = Math.PI; // Use browser's Math.PI for precision
+
+            // --- Helper Function ---
+            /**
+             * Safely parses a float and formats it to two decimal places.
+             * Returns '0.00' if input is invalid or NaN.
+             * @param {number|string} value The value to format.
+             * @returns {string} Formatted number string.
+             */
+            function formatOutput(value) {
+                const number = parseFloat(value);
+                // Check if the number is NaN or if the original value was empty/just whitespace
+                if (isNaN(number) || String(value).trim() === '') {
+                    return '0.00';
+                }
+                // Handle potential floating point inaccuracies before toFixed
+                // e.g., rounding 1.005 up to 1.01
+                const rounded = Math.round(number * 100) / 100;
+                return rounded.toFixed(2);
+            }
+
+            // --- Calculation Functions ---
+
+            // Calculates the average of the velocity inputs
+            function calculateAverage() {
+                let sum = 0;
+                let count = 0;
+                velocityInputs.forEach(input => {
+                    // Only consider inputs that have a value and are valid numbers
+                    if (input.value.trim() !== '') {
+                         const value = parseFloat(input.value);
+                         if (!isNaN(value)) {
+                            sum += value;
+                            count++;
+                         }
+                    }
+                });
+                const average = (count > 0) ? (sum / count) : 0;
+                averageOutput.textContent = formatOutput(average);
+                calculateVolume(); // Recalculate volume whenever average changes
+            }
+
+            // Calculates the volume (CFM) based on average velocity and area
+            function calculateVolume() {
+                // Read the *calculated* average, not parsing the input again
+                const average = parseFloat(averageOutput.textContent);
+                const area = parseFloat(areaInputFt2.value);
+                // Check if both average (already formatted) and area are valid numbers
+                if (isNaN(average) || isNaN(area) || String(areaInputFt2.value).trim() === '') {
+                    volumeOutputCfm.textContent = '0.00';
+                    return;
+                }
+                const volume = average * area;
+                volumeOutputCfm.textContent = formatOutput(volume);
+            }
+
+            // Converts CFM to m³/h
+            function convertCfmToM3h() {
+                const cfm = parseFloat(cfmInputConverter.value);
+                if (isNaN(cfm) || String(cfmInputConverter.value).trim() === '') {
+                    m3hOutput.textContent = '0.00';
+                    return;
+                }
+                const m3h = cfm * CFM_TO_M3H_FACTOR;
+                m3hOutput.textContent = formatOutput(m3h);
+            }
+
+            // Calculates the area of a square/rectangle
+            function calculateSquareArea() {
+                const height = parseFloat(squareHeightCm.value);
+                const length = parseFloat(squareLengthCm.value);
+                // Check if both dimensions are valid numbers
+                if (isNaN(height) || isNaN(length) || String(squareHeightCm.value).trim() === '' || String(squareLengthCm.value).trim() === '') {
+                    squareAreaOutputCm2.textContent = '0.00';
+                    return;
+                }
+                const area = height * length;
+                squareAreaOutputCm2.textContent = formatOutput(area);
+            }
+
+            // Calculates the area of a circle
+            function calculateCircleArea() {
+                const diameter = parseFloat(circleDiameterCm.value);
+                // Diameter must be a positive number
+                if (isNaN(diameter) || diameter <= 0 || String(circleDiameterCm.value).trim() === '') {
+                    circleAreaOutputCm2.textContent = '0.00';
+                    return;
+                }
+                const radius = diameter / 2;
+                const area = PI * Math.pow(radius, 2); // Area = π * r^2
+                circleAreaOutputCm2.textContent = formatOutput(area);
+            }
+
+            // Converts cm² to ft² (pie²)
+            function convertCm2ToFt2() {
+                const cm2 = parseFloat(cm2InputConverter.value);
+                 if (isNaN(cm2) || String(cm2InputConverter.value).trim() === '') {
+                    ft2OutputConverter.textContent = '0.00';
+                    return;
+                }
+                const ft2 = cm2 * CM2_TO_FT2_FACTOR;
+                ft2OutputConverter.textContent = formatOutput(ft2);
+            }
+
+            // --- Event Listeners ---
+
+            // Add 'input' event listeners to trigger calculations automatically
+
+            // Calculate Average and Volume when any velocity input changes
+            velocityInputs.forEach(input => {
+                input.addEventListener('input', calculateAverage);
+            });
+
+            // Calculate Volume when area input (ft²) changes
+            areaInputFt2.addEventListener('input', calculateVolume);
+
+            // CFM to m³/h converter trigger
+            cfmInputConverter.addEventListener('input', convertCfmToM3h);
+
+            // Square area calculator triggers
+            squareHeightCm.addEventListener('input', calculateSquareArea);
+            squareLengthCm.addEventListener('input', calculateSquareArea);
+
+            // Circle area calculator trigger
+            circleDiameterCm.addEventListener('input', calculateCircleArea);
+
+            // cm² to ft² converter trigger
+            cm2InputConverter.addEventListener('input', convertCm2ToFt2);
+
+            // --- Initial Calculation (optional, if needed for default values) ---
+            // Call functions on load if inputs might have default values
+            // calculateAverage(); // Calculate initial average/volume if velocity inputs have defaults
+            // convertCfmToM3h(); // etc.
+        });
+    </script>
+</body>
+</html>
